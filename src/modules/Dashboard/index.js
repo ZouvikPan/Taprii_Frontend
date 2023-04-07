@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Avatar from '../../assets/Avatar.png'
 import Input from '../../components/Input'
 import { io } from 'socket.io-client'
@@ -12,6 +12,8 @@ const Dashboard = () => {
     const [users, setUsers] = useState([])
     const [message, setMessage] = useState('')
     const [socket, setSocket] = useState(null)
+    const messageRef = useRef(null)
+
     // console.log('user :>>', user);
     // console.log('conversations :>>', conversations);
     // console.log('users :>>', users);
@@ -30,11 +32,14 @@ const Dashboard = () => {
             console.log('data :>>', data);
             setMessages(prev =>({
                 ...prev,
-                messages: [...prev.messages, {user: user.data.user, message: data.message}]
+                messages: [...prev.messages, {user: user?.data?.user, message: data.message}]
             }));
         });
     }, [socket])
     
+    useEffect(() => {
+      messageRef?.current?.scrollIntoView({behavior: 'smooth'})
+    }, [messages.messages])
     
 
     useEffect(() => {
@@ -107,7 +112,7 @@ const Dashboard = () => {
 
   return (
     <div className='flex w-screen'>
-        <div className='w-[25%] h-screen bg-secondary'>
+        <div className='w-[25%] h-screen bg-secondary overflow-auto'>
             <div className='flex justify-center items-center my-8 mx-14'>
                 <div className='border border-primary p-2px rounded-full'>
                     <img src={Avatar} width={75} height={75}/>
@@ -171,10 +176,13 @@ const Dashboard = () => {
                         messages?.messages?.length > 0 ?
                         messages.messages.map(({message, user: {id} = {}}) =>{
                             return(
-                                <div className={`max-w-[40%] p-4 mb-6 ${ id === user?.id ? 'bg-primary rounded-b-xl rounded-tl-xl text-white ml-auto' :
-                                'bg-secondary rounded-b-xl rounded-tr-xl'}`}>
-                                    {message}
-                                </div>
+                                <>
+                                    <div className={`max-w-[40%] p-4 mb-6 ${ id === user?.id ? 'bg-primary rounded-b-xl rounded-tl-xl text-white ml-auto' :
+                                    'bg-secondary rounded-b-xl rounded-tr-xl'}`}>
+                                        {message}
+                                    </div>
+                                    <div ref={messageRef}></div>
+                                </>
                             )
                             // if(id === user?.id)
                             // {
@@ -219,7 +227,7 @@ const Dashboard = () => {
             }
         </div>
         
-        <div className='w-[25%] h-screen px-8 py-16'>
+        <div className='w-[25%] h-screen px-8 py-16 overflow-auto'>
         <div className='text-primary text-lg'>People</div>
         <div>
             {
